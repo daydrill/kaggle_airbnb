@@ -1,0 +1,101 @@
+---
+title: "1. EDA"
+author: "Chisung Song"
+date: "2016. 3. 18"
+output: html_document
+---
+
+# [1] Exploratory data analysis  
+
+- leanpub의 The Art of Data Science(https://leanpub.com/artofdatascience) 중 chapter4 EDA의 방법을 이용하여 EDA.
+- data : https://www.kaggle.com/c/airbnb-recruiting-new-user-bookings
+
+## Step 1. formulate your question
+- which country a new user's first booking destination will be
+
+```{r}
+
+```
+
+
+
+## Step 2. Read in your data 
+
+### 1. read the data
+```{r}
+#install.packages("readr")
+library(readr)
+
+## the training set of users
+df_train <- read_csv("data/train_users_2.csv") # col_types = "ccincc..." 으로 불러올 값 설정 가능.
+
+## the test set of users
+df_test <- read_csv("data/test_users.csv")
+
+## web sessions log for users
+df_sessions <- read_csv("data/sessions.csv")
+
+## summary statistics of destination countries in this dataset and their locations
+df_countries <- read_csv("data/countries.csv")
+
+## summary statistics of users' age group, gender, country of destination
+df_people <- read_csv("data/age_gender_bkts.csv")
+```
+
+### 2. column name tunning
+```{r}
+names(df_train) <- make.names(names(df_train))
+names(df_test) <- make.names(names(df_test))
+names(df_sessions) <- make.names(names(df_sessions))
+names(df_countries) <- make.names(names(df_countries))
+names(df_people) <- make.names(names(df_people))
+```
+
+
+## Step 3. Check the packaging 
+- nrow(), ncol(), dim(), str() 등을 이용하여 데이터의 구조 확인.
+```{r}
+str(df_train)
+str(df_test)
+str(df_sessions)
+str(df_countries)
+str(df_people)
+```
+
+
+## Step 4. Look at the top and the bottom of your data   
+```{r}
+head(df_train)
+head(df_test)
+head(df_sessions)
+# 데이터의 끝에 코멘트를 달아두는 경우도 있기 떄문에 tail()도 유용.
+tail(df_countries) 
+tail(df_people)
+```
+
+
+
+## Step 5. Check your "n"s
+```{r}
+ 
+
+```
+
+
+
+
+
+## Step 6. Validate with at least one external data source  
+## Step 7. Make a plot           
+## Step 8. Try the easy solution first    
+## Step 9. Follow up            
+
+
+
+
+
+
+
+
+
+
