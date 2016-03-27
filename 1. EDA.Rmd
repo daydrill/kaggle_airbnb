@@ -2,7 +2,9 @@
 title: "1. EDA"
 author: "Chisung Song"
 date: "2016. 3. 18"
-output: html_document
+output:
+  html_document:
+    keep_md: yes
 ---
 
 # [1] Exploratory data analysis  
@@ -68,34 +70,139 @@ str(df_people)
 head(df_train)
 head(df_test)
 head(df_sessions)
+head(df_countries) 
+head(df_people)
 # 데이터의 끝에 코멘트를 달아두는 경우도 있기 떄문에 tail()도 유용.
-tail(df_countries) 
-tail(df_people)
 ```
 
 
 
 ## Step 5. Check your "n"s
 ```{r}
- 
+library(dplyr)
+
+dim(df_train)
+df_train_NNDF <- df_train %>% filter(country_destination != "NDF")
+dim(df_train_NNDF)
+
+dsti <- table(df_train_NNDF$country_destination)
+barplot(dsti)
+
+barplot(table(df_train$gender))
+
+dim(df_train)
+
+df_train_filtered <- df_train %>% filter(gender != "-unknown-" & gender != "OTHER" & !is.na(age) & !is.na(first_affiliate_tracked) & first_browser != "-unknown-")
+
+table(df_train$first_affiliate_tracked)
+
+library(ggplot2)
+  
+barplot(table(df_train_filtered$age))
+
+
+  
+
+barplot(table(df_train_temp$age[1:30]))
+
+
+df_train$age[1:30]
+
+
+
+df_train_temp <- df_train %>% filter(gender != "-unknown-" | age != NA)
+df_train_temp <- df_train %>% filter(gender != "-unknown-")  %>% filter(i) 
+
+
+
 
 ```
 
 
 
-
-
 ## Step 6. Validate with at least one external data source  
+```{r}
+library(dplyr)
+# 1. country destination 수 비교
+dim(df_train)
+unique(df_train$country_destination) # ->12가지의 경우.
+df_train_NNDF <- df_train %>% filter(country_destination != "NDF")
+dim(df_train_NNDF)  
+
+dsti <- table(df_train_NNDF$country_destination)
+barplot(dsti)
+
+```
+
+
+
 ## Step 7. Make a plot           
+
+
+
 ## Step 8. Try the easy solution first    
+
+
+
+
 ## Step 9. Follow up            
 
 
 
 
 
+------
+
+## naive bayes
+
+```{r}
+df_train
 
 
+```
+
+
+## naive bayes
+
+```{r}
+
+
+df_temp <- df_train_filtered %>% filter(country_destination != "NDF")
+  
+
+# create train/text indices from toy spam data
+ndx <- sample(nrow(df_temp), floor(nrow(df_temp) * 0.7))
+train <- df_temp[ndx,]
+test <- df_temp[-ndx,]
+
+# split into train/test data
+xTrain <- train[,-16]
+yTrain <- train$country_destination
+xTest <- test[,-16]
+yTest <- test$country_destination
+
+xTest
+
+# fit naive bayes model with default params
+model <- naiveBayes(xTrain, yTrain)
+
+
+# look at confusion matrix
+table(predict(model, xTest), yTest)
+predict(model, xTest)
+
+# plot histogram of predicted probabilities
+# note overconfident predictions
+probs <- predict(model, xTest, type="raw")
+qplot(x=probs[, "spam"], geom="histogram")
+
+# plot ROC curve
+pred <- prediction(probs[, "spam"], yTest)
+perf_nb <- performance(pred, measure='tpr', x.measure='fpr')
+plot(perf_nb)
+
+
+```
 
 
 

@@ -74,16 +74,227 @@ img {
 
 
 <div id="exploratory-data-analysis" class="section level1">
-<h1>1. Exploratory data analysis</h1>
+<h1>[1] Exploratory data analysis</h1>
 <ul>
 <li>leanpub의 The Art of Data Science(<a href="https://leanpub.com/artofdatascience" class="uri">https://leanpub.com/artofdatascience</a>) 중 chapter4 EDA의 방법을 이용하여 EDA.</li>
 <li>data : <a href="https://www.kaggle.com/c/airbnb-recruiting-new-user-bookings" class="uri">https://www.kaggle.com/c/airbnb-recruiting-new-user-bookings</a></li>
 </ul>
 <div id="step-1.-formulate-your-question" class="section level2">
 <h2>Step 1. formulate your question</h2>
+<ul>
+<li>which country a new user’s first booking destination will be</li>
+</ul>
 </div>
 <div id="step-2.-read-in-your-data" class="section level2">
 <h2>Step 2. Read in your data</h2>
+<div id="read-the-data" class="section level3">
+<h3>1. read the data</h3>
+<pre class="r"><code>#install.packages(&quot;readr&quot;)
+library(readr)
+
+## the training set of users
+df_train &lt;- read_csv(&quot;data/train_users_2.csv&quot;) # col_types = &quot;ccincc...&quot; 으로 불러올 값 설정 가능.
+
+## the test set of users
+df_test &lt;- read_csv(&quot;data/test_users.csv&quot;)
+
+## web sessions log for users
+df_sessions &lt;- read_csv(&quot;data/sessions.csv&quot;)
+
+## summary statistics of destination countries in this dataset and their locations
+df_countries &lt;- read_csv(&quot;data/countries.csv&quot;)
+
+## summary statistics of users' age group, gender, country of destination
+df_people &lt;- read_csv(&quot;data/age_gender_bkts.csv&quot;)</code></pre>
+</div>
+<div id="column-name-tunning" class="section level3">
+<h3>2. column name tunning</h3>
+<pre class="r"><code>names(df_train) &lt;- make.names(names(df_train))
+names(df_test) &lt;- make.names(names(df_test))
+names(df_sessions) &lt;- make.names(names(df_sessions))
+names(df_countries) &lt;- make.names(names(df_countries))
+names(df_people) &lt;- make.names(names(df_people))</code></pre>
+</div>
+</div>
+<div id="step-3.-check-the-packaging" class="section level2">
+<h2>Step 3. Check the packaging</h2>
+<ul>
+<li>nrow(), ncol(), dim(), str() 등을 이용하여 데이터의 구조 확인.</li>
+</ul>
+<pre class="r"><code>str(df_train)</code></pre>
+<pre><code>## Classes 'tbl_df', 'tbl' and 'data.frame':    213451 obs. of  16 variables:
+##  $ id                     : chr  &quot;gxn3p5htnn&quot; &quot;820tgsjxq7&quot; &quot;4ft3gnwmtx&quot; &quot;bjjt8pjhuk&quot; ...
+##  $ date_account_created   : Date, format: &quot;2010-06-28&quot; &quot;2011-05-25&quot; ...
+##  $ timestamp_first_active : num  2.01e+13 2.01e+13 2.01e+13 2.01e+13 2.01e+13 ...
+##  $ date_first_booking     : Date, format: NA NA ...
+##  $ gender                 : chr  &quot;-unknown-&quot; &quot;MALE&quot; &quot;FEMALE&quot; &quot;FEMALE&quot; ...
+##  $ age                    : num  NA 38 56 42 41 NA 46 47 50 46 ...
+##  $ signup_method          : chr  &quot;facebook&quot; &quot;facebook&quot; &quot;basic&quot; &quot;facebook&quot; ...
+##  $ signup_flow            : int  0 0 3 0 0 0 0 0 0 0 ...
+##  $ language               : chr  &quot;en&quot; &quot;en&quot; &quot;en&quot; &quot;en&quot; ...
+##  $ affiliate_channel      : chr  &quot;direct&quot; &quot;seo&quot; &quot;direct&quot; &quot;direct&quot; ...
+##  $ affiliate_provider     : chr  &quot;direct&quot; &quot;google&quot; &quot;direct&quot; &quot;direct&quot; ...
+##  $ first_affiliate_tracked: chr  &quot;untracked&quot; &quot;untracked&quot; &quot;untracked&quot; &quot;untracked&quot; ...
+##  $ signup_app             : chr  &quot;Web&quot; &quot;Web&quot; &quot;Web&quot; &quot;Web&quot; ...
+##  $ first_device_type      : chr  &quot;Mac Desktop&quot; &quot;Mac Desktop&quot; &quot;Windows Desktop&quot; &quot;Mac Desktop&quot; ...
+##  $ first_browser          : chr  &quot;Chrome&quot; &quot;Chrome&quot; &quot;IE&quot; &quot;Firefox&quot; ...
+##  $ country_destination    : chr  &quot;NDF&quot; &quot;NDF&quot; &quot;US&quot; &quot;other&quot; ...</code></pre>
+<pre class="r"><code>str(df_test)</code></pre>
+<pre><code>## Classes 'tbl_df', 'tbl' and 'data.frame':    62096 obs. of  15 variables:
+##  $ id                     : chr  &quot;5uwns89zht&quot; &quot;jtl0dijy2j&quot; &quot;xx0ulgorjt&quot; &quot;6c6puo6ix0&quot; ...
+##  $ date_account_created   : Date, format: &quot;2014-07-01&quot; &quot;2014-07-01&quot; ...
+##  $ timestamp_first_active : num  2.01e+13 2.01e+13 2.01e+13 2.01e+13 2.01e+13 ...
+##  $ date_first_booking     : chr  NA NA NA NA ...
+##  $ gender                 : chr  &quot;FEMALE&quot; &quot;-unknown-&quot; &quot;-unknown-&quot; &quot;-unknown-&quot; ...
+##  $ age                    : num  35 NA NA NA NA 28 48 NA NA NA ...
+##  $ signup_method          : chr  &quot;facebook&quot; &quot;basic&quot; &quot;basic&quot; &quot;basic&quot; ...
+##  $ signup_flow            : int  0 0 0 0 0 0 25 0 0 0 ...
+##  $ language               : chr  &quot;en&quot; &quot;en&quot; &quot;en&quot; &quot;en&quot; ...
+##  $ affiliate_channel      : chr  &quot;direct&quot; &quot;direct&quot; &quot;direct&quot; &quot;direct&quot; ...
+##  $ affiliate_provider     : chr  &quot;direct&quot; &quot;direct&quot; &quot;direct&quot; &quot;direct&quot; ...
+##  $ first_affiliate_tracked: chr  &quot;untracked&quot; &quot;untracked&quot; &quot;linked&quot; &quot;linked&quot; ...
+##  $ signup_app             : chr  &quot;Moweb&quot; &quot;Moweb&quot; &quot;Web&quot; &quot;Web&quot; ...
+##  $ first_device_type      : chr  &quot;iPhone&quot; &quot;iPhone&quot; &quot;Windows Desktop&quot; &quot;Windows Desktop&quot; ...
+##  $ first_browser          : chr  &quot;Mobile Safari&quot; &quot;Mobile Safari&quot; &quot;Chrome&quot; &quot;IE&quot; ...</code></pre>
+<pre class="r"><code>str(df_sessions)</code></pre>
+<pre><code>## Classes 'tbl_df', 'tbl' and 'data.frame':    10567737 obs. of  6 variables:
+##  $ user_id      : chr  &quot;d1mm9tcy42&quot; &quot;d1mm9tcy42&quot; &quot;d1mm9tcy42&quot; &quot;d1mm9tcy42&quot; ...
+##  $ action       : chr  &quot;lookup&quot; &quot;search_results&quot; &quot;lookup&quot; &quot;search_results&quot; ...
+##  $ action_type  : chr  NA &quot;click&quot; NA &quot;click&quot; ...
+##  $ action_detail: chr  NA &quot;view_search_results&quot; NA &quot;view_search_results&quot; ...
+##  $ device_type  : chr  &quot;Windows Desktop&quot; &quot;Windows Desktop&quot; &quot;Windows Desktop&quot; &quot;Windows Desktop&quot; ...
+##  $ secs_elapsed : num  319 67753 301 22141 435 ...</code></pre>
+<pre class="r"><code>str(df_countries)</code></pre>
+<pre><code>## Classes 'tbl_df', 'tbl' and 'data.frame':    10 obs. of  7 variables:
+##  $ country_destination          : chr  &quot;AU&quot; &quot;CA&quot; &quot;DE&quot; &quot;ES&quot; ...
+##  $ lat_destination              : num  -26.9 62.4 51.2 39.9 46.2 ...
+##  $ lng_destination              : num  133.28 -96.82 10.45 -2.49 2.21 ...
+##  $ distance_km                  : num  15298 2828 7880 7731 7683 ...
+##  $ destination_km2              : num  7741220 9984670 357022 505370 643801 ...
+##  $ destination_language         : chr  &quot;eng&quot; &quot;eng&quot; &quot;deu&quot; &quot;spa&quot; ...
+##  $ language_levenshtein_distance: num  0 0 72.6 92.2 92.1 ...</code></pre>
+<pre class="r"><code>str(df_people)</code></pre>
+<pre><code>## Classes 'tbl_df', 'tbl' and 'data.frame':    420 obs. of  5 variables:
+##  $ age_bucket             : chr  &quot;100+&quot; &quot;95-99&quot; &quot;90-94&quot; &quot;85-89&quot; ...
+##  $ country_destination    : chr  &quot;AU&quot; &quot;AU&quot; &quot;AU&quot; &quot;AU&quot; ...
+##  $ gender                 : chr  &quot;male&quot; &quot;male&quot; &quot;male&quot; &quot;male&quot; ...
+##  $ population_in_thousands: num  1 9 47 118 199 298 415 574 636 714 ...
+##  $ year                   : num  2015 2015 2015 2015 2015 ...</code></pre>
+</div>
+<div id="step-4.-look-at-the-top-and-the-bottom-of-your-data" class="section level2">
+<h2>Step 4. Look at the top and the bottom of your data</h2>
+<pre class="r"><code>head(df_train)</code></pre>
+<pre><code>##           id date_account_created timestamp_first_active
+## 1 gxn3p5htnn           2010-06-28           2.009032e+13
+## 2 820tgsjxq7           2011-05-25           2.009052e+13
+## 3 4ft3gnwmtx           2010-09-28           2.009061e+13
+## 4 bjjt8pjhuk           2011-12-05           2.009103e+13
+## 5 87mebub9p4           2010-09-14           2.009121e+13
+## 6 osr2jwljor           2010-01-01           2.010010e+13
+##   date_first_booking    gender age signup_method signup_flow language
+## 1               &lt;NA&gt; -unknown-  NA      facebook           0       en
+## 2               &lt;NA&gt;      MALE  38      facebook           0       en
+## 3         2010-08-02    FEMALE  56         basic           3       en
+## 4         2012-09-08    FEMALE  42      facebook           0       en
+## 5         2010-02-18 -unknown-  41         basic           0       en
+## 6         2010-01-02 -unknown-  NA         basic           0       en
+##   affiliate_channel affiliate_provider first_affiliate_tracked signup_app
+## 1            direct             direct               untracked        Web
+## 2               seo             google               untracked        Web
+## 3            direct             direct               untracked        Web
+## 4            direct             direct               untracked        Web
+## 5            direct             direct               untracked        Web
+## 6             other              other                     omg        Web
+##   first_device_type first_browser country_destination
+## 1       Mac Desktop        Chrome                 NDF
+## 2       Mac Desktop        Chrome                 NDF
+## 3   Windows Desktop            IE                  US
+## 4       Mac Desktop       Firefox               other
+## 5       Mac Desktop        Chrome                  US
+## 6       Mac Desktop        Chrome                  US</code></pre>
+<pre class="r"><code>head(df_test)</code></pre>
+<pre><code>##           id date_account_created timestamp_first_active
+## 1 5uwns89zht           2014-07-01            2.01407e+13
+## 2 jtl0dijy2j           2014-07-01            2.01407e+13
+## 3 xx0ulgorjt           2014-07-01            2.01407e+13
+## 4 6c6puo6ix0           2014-07-01            2.01407e+13
+## 5 czqhjk3yfe           2014-07-01            2.01407e+13
+## 6 szx28ujmhf           2014-07-01            2.01407e+13
+##   date_first_booking    gender age signup_method signup_flow language
+## 1               &lt;NA&gt;    FEMALE  35      facebook           0       en
+## 2               &lt;NA&gt; -unknown-  NA         basic           0       en
+## 3               &lt;NA&gt; -unknown-  NA         basic           0       en
+## 4               &lt;NA&gt; -unknown-  NA         basic           0       en
+## 5               &lt;NA&gt; -unknown-  NA         basic           0       en
+## 6               &lt;NA&gt;    FEMALE  28         basic           0       en
+##   affiliate_channel affiliate_provider first_affiliate_tracked signup_app
+## 1            direct             direct               untracked      Moweb
+## 2            direct             direct               untracked      Moweb
+## 3            direct             direct                  linked        Web
+## 4            direct             direct                  linked        Web
+## 5            direct             direct               untracked        Web
+## 6         sem-brand             google                     omg        Web
+##   first_device_type first_browser
+## 1            iPhone Mobile Safari
+## 2            iPhone Mobile Safari
+## 3   Windows Desktop        Chrome
+## 4   Windows Desktop            IE
+## 5       Mac Desktop        Safari
+## 6   Windows Desktop        Chrome</code></pre>
+<pre class="r"><code>head(df_sessions)</code></pre>
+<pre><code>##      user_id         action action_type       action_detail
+## 1 d1mm9tcy42         lookup        &lt;NA&gt;                &lt;NA&gt;
+## 2 d1mm9tcy42 search_results       click view_search_results
+## 3 d1mm9tcy42         lookup        &lt;NA&gt;                &lt;NA&gt;
+## 4 d1mm9tcy42 search_results       click view_search_results
+## 5 d1mm9tcy42         lookup        &lt;NA&gt;                &lt;NA&gt;
+## 6 d1mm9tcy42 search_results       click view_search_results
+##       device_type secs_elapsed
+## 1 Windows Desktop          319
+## 2 Windows Desktop        67753
+## 3 Windows Desktop          301
+## 4 Windows Desktop        22141
+## 5 Windows Desktop          435
+## 6 Windows Desktop         7703</code></pre>
+<pre class="r"><code># 데이터의 끝에 코멘트를 달아두는 경우도 있기 떄문에 tail()도 유용.
+tail(df_countries) </code></pre>
+<pre><code>##    country_destination lat_destination lng_destination distance_km
+## 5                   FR        46.23219        2.209667    7682.945
+## 6                   GB        54.63322       -3.432277    6883.659
+## 7                   IT        41.87399       12.564167    8636.631
+## 8                   NL        52.13306        5.295250    7524.320
+## 9                   PT        39.55344       -7.839319    7355.253
+## 10                  US        36.96643      -95.844030       0.000
+##    destination_km2 destination_language language_levenshtein_distance
+## 5           643801                  fra                         92.06
+## 6           243610                  eng                          0.00
+## 7           301340                  ita                         89.40
+## 8            41543                  nld                         63.22
+## 9            92090                  por                         95.45
+## 10         9826675                  eng                          0.00</code></pre>
+<pre class="r"><code>tail(df_people)</code></pre>
+<pre><code>##     age_bucket country_destination gender population_in_thousands year
+## 415       100+                  US   male                      13 2015
+## 416      95-99                  US   male                     115 2015
+## 417      90-94                  US   male                     541 2015
+## 418      15-19                  US female                   10570 2015
+## 419      85-89                  US   male                    1441 2015
+## 420      80-84                  US   male                    2442 2015</code></pre>
+</div>
+<div id="step-5.-check-your-ns" class="section level2">
+<h2>Step 5. Check your “n”s</h2>
+</div>
+<div id="step-6.-validate-with-at-least-one-external-data-source" class="section level2">
+<h2>Step 6. Validate with at least one external data source</h2>
+</div>
+<div id="step-7.-make-a-plot" class="section level2">
+<h2>Step 7. Make a plot</h2>
+</div>
+<div id="step-8.-try-the-easy-solution-first" class="section level2">
+<h2>Step 8. Try the easy solution first</h2>
+</div>
+<div id="step-9.-follow-up" class="section level2">
+<h2>Step 9. Follow up</h2>
 </div>
 </div>
 
